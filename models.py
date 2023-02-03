@@ -66,15 +66,18 @@ class Article(db.Model):
         self.title = title
 
     def to_dict(self):
+        # author = Author.query.filter_by(id=self.author_id)
         return {
             'id': self.id,
             'title': self.title,
             'slug': self.slug,
             'status': self.status,
             'content': self.content,
+            'excerpt': self.excerpt,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
-            'author_id': self.author_id
+            'author_id': self.author_id,
+            'author': self.author.username
         }
 
     def __repr__(self):

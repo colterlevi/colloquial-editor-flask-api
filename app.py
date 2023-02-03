@@ -97,6 +97,15 @@ def protected():
         return {}, 404
 
 
+@app.post('/authors')
+def create_author():
+    data = request.json
+    author = Author(data['first_name'], data['last_name'], data['email'], data['username'], data['password'], data['admin'])
+    print(data)
+    db.session.add(author)
+    db.session.commit()
+    return jsonify(author.to_dict()), 201
+
 @app.get('/authors')
 def all_authors():
     authors = Author.query.all()
