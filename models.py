@@ -50,10 +50,10 @@ class Author(db.Model):
 class Article(db.Model):
     __tablename__ = 'articles'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
-    excerpt = db.Column(db.String(120), nullable=False)
-    slug = db.Column(db.String(80), nullable=False)
-    content = db.Column(db.Text, nullable=False)
+    title = db.Column(db.String(120))
+    excerpt = db.Column(db.String(120))
+    slug = db.Column(db.String(80))
+    content = db.Column(db.Text)
     status = db.Column(db.String, nullable=True, server_default='draft')
     tags = db.Column(db.String, nullable=True, server_default='draft')
     category = db.Column(db.String, nullable=True, server_default='draft')
@@ -61,8 +61,9 @@ class Article(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
-    def __init__(self, content):
+    def __init__(self, content, title):
         self.content = content
+        self.title = title
 
     def to_dict(self):
         return {

@@ -1,8 +1,14 @@
 body {
   text-align: center;
   font-family: sans-serif;
+  background-color: #919CAD;
 }
 
 a {
   display: block;
+}
+
+.banner {
+  width: 600px;
+  margin: 3rem
 }
