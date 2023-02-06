@@ -184,7 +184,7 @@ def delete_article(id):
         # get the current article ID (not the object itself)
         current_user = get_jwt_identity()
         print('deleting article')
-        return jsonify(article.to_dict())
+        return 201
     else:
         return {'error': 'No article found'}, 404
 
