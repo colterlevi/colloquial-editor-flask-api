@@ -117,9 +117,27 @@ def all_authors():
 def update_author(id):
     author = Author.query.get_or_404(id)
     # currently only updates the username. Add more as you see fit
-    author.username = request.form['username']
+    author.username = request.json['username']
+    author.first_name = request.json['first_name']
+    author.last_name = request.json['last_name']
+    author.bio = request.json['bio']
     db.session.commit()
     return jsonify(author.to_dict())
+
+
+@app.delete('/authors/<int:id>')
+@jwt_required()
+def delete_author(id):
+    author = Author.query.get(id)
+    if author:
+        db.session.delete(author)
+        db.session.commit()
+        # get the current author ID (not the object itself)
+        current_user = get_jwt_identity()
+        print('deleting author')
+        return jsonify(author.to_dict())
+    else:
+        return {'error': 'No user found'}, 404
 
 @app.get('/articles')
 def all_articles():
