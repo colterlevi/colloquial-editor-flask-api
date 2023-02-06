@@ -100,7 +100,8 @@ def protected():
 @app.post('/authors')
 def create_author():
     data = request.json
-    author = Author(data['first_name'], data['last_name'], data['email'], data['username'], data['password'], data['admin'])
+    author = Author(data['first_name'], data['last_name'],
+                    data['username'], data['email'], data['password'], data['admin'])
     print(data)
     db.session.add(author)
     db.session.commit()
