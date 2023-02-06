@@ -61,7 +61,8 @@ class Article(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
-    def __init__(self, content, title):
+    def __init__(self, author_id, content, title):
+        self.author_id = author_id
         self.content = content
         self.title = title
 

@@ -152,6 +152,17 @@ def show_post(id):
     return jsonify(article.to_dict())
 
 
+@app.post('/articles')
+@jwt_required()
+def create_article():
+    data = request.json
+    article = Article(data['author_id'], data['content'], data['title'])
+    print(data)
+    db.session.add(article)
+    db.session.commit()
+    return jsonify(article.to_dict()), 201
+
+
 @app.patch('/articles/<int:id>')
 def update_article(id):
     article = Article.query.get_or_404(id)
@@ -160,6 +171,21 @@ def update_article(id):
     article.content = request.json['content']
     db.session.commit()
     return jsonify(article.to_dict())
+
+
+@app.delete('/articles/<int:id>')
+@jwt_required()
+def delete_article(id):
+    article = Article.query.get(id)
+    if article:
+        db.session.delete(article)
+        db.session.commit()
+        # get the current article ID (not the object itself)
+        current_user = get_jwt_identity()
+        print('deleting article')
+        return jsonify(article.to_dict())
+    else:
+        return {'error': 'No article found'}, 404
 
 
 if __name__ == '__main__':
