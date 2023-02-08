@@ -133,8 +133,6 @@ def delete_author(id):
     if author:
         db.session.delete(author)
         db.session.commit()
-        # get the current author ID (not the object itself)
-        current_user = get_jwt_identity()
         print('deleting author')
         return jsonify(author.to_dict())
     else:
@@ -156,20 +154,21 @@ def show_post(id):
 @app.post('/articles')
 @jwt_required()
 def create_article():
+    current_user = get_jwt_identity()
     data = request.json
-    article = Article(data['author_id'], data['content'], data['title'])
-    print(data)
+    article = Article(data['content'], data['title'], author_id=current_user)
+    print(article)
     db.session.add(article)
     db.session.commit()
     return jsonify(article.to_dict()), 201
 
 
 @app.patch('/articles/<int:id>')
+@jwt_required()
 def update_article(id):
     article = Article.query.get_or_404(id)
-    # currently only updates the username. Add more as you see fit
-    article.title = request.json['title']
     article.content = request.json['content']
+    article.title = request.json['title']
     db.session.commit()
     return jsonify(article.to_dict())
 
@@ -181,10 +180,8 @@ def delete_article(id):
     if article:
         db.session.delete(article)
         db.session.commit()
-        # get the current article ID (not the object itself)
-        current_user = get_jwt_identity()
         print('deleting article')
-        return 201
+        return jsonify(msg="Article DELETED"), 201
     else:
         return {'error': 'No article found'}, 404
 
