@@ -17,6 +17,7 @@ class Author(db.Model):
     password = db.Column(db.String(120), nullable=False)
     bio = db.Column(db.Text, nullable=True)
     articles = db.relationship('Article', backref='author', lazy=True)
+    edits = db.relationship('Edit', backref='author', lazy=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
@@ -58,6 +59,7 @@ class Article(db.Model):
     tags = db.Column(db.String, nullable=True, server_default='draft')
     category = db.Column(db.String, nullable=True, server_default='draft')
     author_id = db.Column(db.Integer, db.ForeignKey('authors.id'), nullable=True)
+    edits = db.relationship('Edit', backref='article', cascade='all, delete-orphan', lazy=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
@@ -78,7 +80,8 @@ class Article(db.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'author_id': self.author_id,
-            'author': self.author.username
+            'author': self.author.username,
+            'edits': [edit.to_dict() for edit in Edit.query.filter_by(article_id=self.id)]
         }
 
     def __repr__(self):
@@ -101,3 +104,27 @@ class Category(db.Model):
 
     def __repr__(self):
         return f'<Category {self.id}>'
+
+class Edit(db.Model):
+    __tablename__ = 'edits'
+    id = db.Column(db.Integer, primary_key=True)
+    author_id = db.Column(db.Integer, db.ForeignKey('authors.id'), nullable=False)
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id'), nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
+
+
+    def __init__(self, article_id, author_id):
+            self.article_id = article_id
+            self.author_id = author_id
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'article': self.article.title,
+            'editor': self.author.username,
+            'updated_at': self.updated_at,
+        }
+
+    def __repr__(self):
+        return f'<Edit {self.id}>'

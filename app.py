@@ -5,7 +5,7 @@ from flask import Flask, send_file, request, jsonify
 from flask_migrate import Migrate
 from flask_cors import CORS
 from config import Config
-from models import db, Author, Article
+from models import db, Author, Article, Edit
 from pprint import pprint
 import platform
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt
@@ -122,6 +122,7 @@ def update_author(id):
     author.first_name = request.json['first_name']
     author.last_name = request.json['last_name']
     author.bio = request.json['bio']
+    author.admin = request.json['admin']
     db.session.commit()
     return jsonify(author.to_dict())
 
@@ -151,6 +152,13 @@ def show_post(id):
     return jsonify(article.to_dict())
 
 
+@app.get('/edits')
+def all_edits():
+    edits = Edit.query.all()
+    Edit.query.count()
+    return jsonify([edit.to_dict() for edit in edits])
+
+
 @app.post('/articles')
 @jwt_required()
 def create_article():
@@ -169,6 +177,9 @@ def update_article(id):
     article = Article.query.get_or_404(id)
     article.content = request.json['content']
     article.title = request.json['title']
+    current_user = get_jwt_identity()
+    edit = Edit(article_id=article.id, author_id=current_user)
+    db.session.add(edit)
     db.session.commit()
     return jsonify(article.to_dict())
 
