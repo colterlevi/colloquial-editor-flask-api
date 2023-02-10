@@ -105,6 +105,24 @@ class Category(db.Model):
     def __repr__(self):
         return f'<Category {self.id}>'
 
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    id = db.Column(db.Integer, primary_key=True)
+    tag = db.Column(db.String(80), unique=True, nullable=False)
+
+
+    def __init__(self, tag):
+            self.tag = tag
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'tag': self.tag,
+        }
+
+    def __repr__(self):
+        return f'<Tag {self.id}>'
+
 class Edit(db.Model):
     __tablename__ = 'edits'
     id = db.Column(db.Integer, primary_key=True)
