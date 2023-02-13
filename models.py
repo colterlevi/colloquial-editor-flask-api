@@ -91,8 +91,8 @@ class Category(db.Model):
     __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
-    slug = db.Column(db.String(80), unique=True, nullable=False)
-    count = db.Column(db.Integer)
+    slug = db.Column(db.String(80), unique=True)
+    count = db.Column(db.Integer, default=0)
 
 
     def __init__(self, name):
@@ -113,11 +113,11 @@ class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
-    slug = db.Column(db.String(80), unique=True, nullable=False)
-    count = db.Column(db.Integer)
+    slug = db.Column(db.String(80), unique=True)
+    count = db.Column(db.Integer, default=0)
 
 
-    def __init__(self, name, slug):
+    def __init__(self, name):
             self.name = name
 
     def to_dict(self):

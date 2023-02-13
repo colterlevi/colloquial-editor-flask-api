@@ -165,10 +165,59 @@ def create_article():
     current_user = get_jwt_identity()
     data = request.json
     article = Article(data['content'], data['title'], author_id=current_user)
-    print(article)
     db.session.add(article)
+    tag = Tag.query.filter_by(name=data['tag']).first()
+    if tag:
+        tag.count += 1
+    else:
+        tag = Tag(name=data['tag']) 
+        db.session.add(tag)
+        db.session.commit()
+    category = Category.query.filter_by(name=data['category']).first()
+    if category:
+        category.count += 1
+    else:
+        category = Category(name=data['category'])
+        db.session.add(category)
+        db.session.commit()
+    print(article)
     db.session.commit()
     return jsonify(article.to_dict()), 201
+
+
+# def create_or_update_instances(table1_instance, table2_instance_data, table3_instance_data):
+#     # Create a new instance of Table1
+#     db.session.add(table1_instance)
+#     db.session.commit()
+
+#     # Try to retrieve an instance of Table2 with the same data
+#     table2_instance = Table2.query.filter_by(**table2_instance_data).first()
+
+#     # If an instance of Table2 with the same data exists, update it
+#     if table2_instance:
+#         for key, value in table2_instance_data.items():
+#             setattr(table2_instance, key, value)
+#         db.session.commit()
+#     # If an instance of Table2 with the same data does not exist, create a new one
+#     else:
+#         table2_instance = Table2(**table2_instance_data)
+#         db.session.add(table2_instance)
+#         db.session.commit()
+
+#     # Try to retrieve an instance of Table3 with the same data
+#     table3_instance = Table3.query.filter_by(**table3_instance_data).first()
+
+#     # If an instance of Table3 with the same data exists, update it
+#     if table3_instance:
+#         for key, value in table3_instance_data.items():
+#             setattr(table3_instance, key, value)
+#         db.session.commit()
+#     # If an instance of Table3 with the same data does not exist, create a new one
+#     else:
+#         table3_instance = Table3(**table3_instance_data)
+#         db.session.add(table3_instance)
+#         db.session.commit()
+
 
 
 @app.patch('/articles/<int:id>')
