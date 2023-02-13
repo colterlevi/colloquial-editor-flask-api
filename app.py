@@ -196,11 +196,12 @@ def update_article(id):
     data = request.json
     current_user = get_jwt_identity()
     article = Article.query.get_or_404(id)
-    tag = Tag.query.filter_by(name=data['tag']).first()
+    tag = Tag.query.filter_by(name=data['tags']).first()
+    # tags = db.session.query(Tag).filter(Tag.name.in_(data['tags']))
     if tag:
         tag.count += 1
     else:
-        tag = Tag(name=data['tag']) 
+        tag = Tag(name=data['tags']) 
         db.session.add(tag)
     category = Category.query.filter_by(name=data['category']).first()
     if category:
