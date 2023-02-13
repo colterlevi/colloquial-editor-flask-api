@@ -5,7 +5,7 @@ from flask import Flask, send_file, request, jsonify
 from flask_migrate import Migrate
 from flask_cors import CORS
 from config import Config
-from models import db, Author, Article, Edit
+from models import db, Author, Article, Edit, Category, Tag
 from pprint import pprint
 import platform
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt
@@ -195,6 +195,20 @@ def delete_article(id):
         return jsonify(msg="Article DELETED"), 201
     else:
         return {'error': 'No article found'}, 404
+
+
+@app.get('/categories')
+def all_categories():
+    categories = Category.query.all()
+    Category.query.count()
+    return jsonify([category.to_dict() for category in categories])
+
+
+@app.get('/tags')
+def all_tags():
+    tags = Tag.query.all()
+    Tag.query.count()
+    return jsonify([tag.to_dict() for tag in tags])
 
 
 if __name__ == '__main__':

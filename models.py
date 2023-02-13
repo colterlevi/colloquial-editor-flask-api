@@ -90,16 +90,20 @@ class Article(db.Model):
 class Category(db.Model):
     __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String(80), unique=True, nullable=False)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    slug = db.Column(db.String(80), unique=True, nullable=False)
+    count = db.Column(db.Integer)
 
 
-    def __init__(self, category):
-            self.category = category
+    def __init__(self, name):
+            self.name = name
 
     def to_dict(self):
         return {
             'id': self.id,
-            'category': self.category,
+            'name': self.name,
+            'slug': self.slug,
+            'count': self.count,
         }
 
     def __repr__(self):
@@ -108,16 +112,20 @@ class Category(db.Model):
 class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
-    tag = db.Column(db.String(80), unique=True, nullable=False)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    slug = db.Column(db.String(80), unique=True, nullable=False)
+    count = db.Column(db.Integer)
 
 
-    def __init__(self, tag):
-            self.tag = tag
+    def __init__(self, name, slug):
+            self.name = name
 
     def to_dict(self):
         return {
             'id': self.id,
-            'tag': self.tag,
+            'name': self.name,
+            'slug': self.slug,
+            'count': self.count,
         }
 
     def __repr__(self):
