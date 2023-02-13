@@ -56,8 +56,8 @@ class Article(db.Model):
     slug = db.Column(db.String(80))
     content = db.Column(db.Text)
     status = db.Column(db.String, nullable=True, server_default='draft')
-    tags = db.Column(db.ARRAY(db.Integer))
-    categories = db.Column(db.ARRAY(db.Integer))
+    tags = db.Column(db.ARRAY(db.Integer), default=[], nullable=False)
+    categories = db.Column(db.ARRAY(db.Integer), default=[], nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('authors.id'), nullable=True)
     edits = db.relationship('Edit', backref='article', cascade='all, delete-orphan', lazy=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
@@ -77,6 +77,8 @@ class Article(db.Model):
             'status': self.status,
             'content': self.content,
             'excerpt': self.excerpt,
+            'tags': self.tags,
+            'categories': self.categories,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'author_id': self.author_id,
