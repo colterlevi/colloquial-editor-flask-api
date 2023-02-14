@@ -1,6 +1,8 @@
 import os
 import redis
+from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
 from flask import Flask, send_file, request, jsonify
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -8,7 +10,7 @@ from config import Config
 from models import db, Author, Article, Edit, Category, Tag
 from pprint import pprint
 import platform
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt, set_access_cookies, unset_jwt_cookies
 
 ACCESS_EXPIRES = timedelta(hours=1)
 
@@ -19,17 +21,28 @@ jwt = JWTManager(app)
 db.init_app(app)
 migrate = Migrate(app, db)
 
-# In Rails, controller actions and routes are separate
-# Here in Flask, they are put together
 @app.get('/')
 def home():
     return send_file('welcome.html')
 
+jwt = JWTManager(app)
 
-@app.get('/info')
-def info():
-    print(dir(platform))
-    return {'machine': platform.node()}
+
+# # Using an `after_request` callback, we refresh any token that is within 30
+# # minutes of expiring. Change the timedeltas to match the needs of your application.
+# @app.after_request
+# def refresh_expiring_jwts(response):
+#     try:
+#         exp_timestamp = get_jwt()["exp"]
+#         now = datetime.now(timezone.utc)
+#         target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+#         if target_timestamp > exp_timestamp:
+#             access_token = create_access_token(identity=get_jwt_identity())
+#             set_access_cookies(response, access_token)
+#         return response
+#     except (RuntimeError, KeyError):
+#         # Case where there is not a valid JWT. Just return the original response
+#         return response
 
 
 @app.post('/login')
@@ -54,7 +67,6 @@ def login():
 jwt_redis_blocklist = redis.StrictRedis(
     host="localhost", port=6379, db=0, decode_responses=True
 )
-
 
 # Callback function to check if a JWT exists in the redis blocklist
 @jwt.token_in_blocklist_loader
@@ -170,19 +182,16 @@ def create_article():
         article.tags = []
     if article.categories is None:
         article.categories = []
-    db.session.add(article)
     tags_str = request.json['tags']
-    tags = list(map(str, tags_str.split(',')))
+    tags = list(map(str, tags_str.split(', ')))
     for t in tags:
         tag = Tag.query.filter_by(name=t).first()
         if tag:
             tag.count += 1
-            print(tag)
             article.tags.append(tag.id)
         else:
             tag = Tag(name=t)
             db.session.add(tag)
-            print(tag)
             article.tags.append(tag.id)
     cat_str = request.json['categories']
     categories = list(map(str, cat_str.split(',')))
@@ -196,6 +205,7 @@ def create_article():
             db.session.add(category)
             article.categories.append(category.id)
     print(article)
+    db.session.add(article)
     db.session.commit()
     return jsonify(article.to_dict()), 201
 
@@ -203,28 +213,34 @@ def create_article():
 @app.patch('/articles/<int:id>')
 @jwt_required()
 def update_article(id):
-    data = request.json
     current_user = get_jwt_identity()
     article = Article.query.get_or_404(id)
-    tag = Tag.query.filter_by(name=data['tags']).first()
-    # tags = db.session.query(Tag).filter(Tag.name.in_(data['tags']))
-    if tag:
-        tag.count += 1
-    else:
-        tag = Tag(name=data['tags']) 
-        db.session.add(tag)
-    category = Category.query.filter_by(name=data['category']).first()
-    if category:
-        category.count += 1
-    else:
-        category = Category(name=data['category'])
-        db.session.add(category)
     if article.tags is None:
         article.tags = []
-    article.tags.append(tag.id)
     if article.categories is None:
         article.categories = []
-    article.categories.append(category.id)
+    tags_str = request.json['tags']
+    tags = list(map(str, tags_str.split(', ')))
+    for t in tags:
+        tag = Tag.query.filter_by(name=t).first()
+        if tag.id not in article.tags:
+            tag.count += 1
+            article.tags.append(tag.id)
+        else:
+            tag = Tag(name=t)
+            db.session.add(tag)
+            article.tags.append(tag.id)
+    cat_str = request.json['categories']
+    categories = list(map(str, cat_str.split(',')))
+    for cat in categories:
+        category = Category.query.filter_by(name=cat).first()
+        if category.id not in article.categories:
+            category.count += 1
+            article.categories.append(category.id)
+        else:
+            category = Category(name=cat)
+            db.session.add(category)
+            article.categories.append(category.id)
     article.content = request.json['content']
     article.title = request.json['title']
     edit = Edit(article_id=article.id, author_id=current_user)
