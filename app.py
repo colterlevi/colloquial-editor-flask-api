@@ -164,27 +164,37 @@ def all_edits():
 def create_article():
     current_user = get_jwt_identity()
     data = request.json
-    tag = Tag.query.filter_by(name=data['tag']).first()
-    if tag:
-        tag.count += 1
-    else:
-        tag = Tag(name=data['tag']) 
-        db.session.add(tag)
-    category = Category.query.filter_by(name=data['category']).first()
-    if category:
-        category.count += 1
-    else:
-        category = Category(name=data['category'])
-        db.session.add(category)
     article = Article(data['content'], data['title'],
                       author_id=current_user)
     if article.tags is None:
         article.tags = []
-    article.tags.append(tag.id)
     if article.categories is None:
         article.categories = []
-    article.categories.append(category.id)
     db.session.add(article)
+    tags_str = request.json['tags']
+    tags = list(map(str, tags_str.split(',')))
+    for t in tags:
+        tag = Tag.query.filter_by(name=t).first()
+        if tag:
+            tag.count += 1
+            print(tag)
+            article.tags.append(tag.id)
+        else:
+            tag = Tag(name=t)
+            db.session.add(tag)
+            print(tag)
+            article.tags.append(tag.id)
+    cat_str = request.json['categories']
+    categories = list(map(str, cat_str.split(',')))
+    for cat in categories:
+        category = Category.query.filter_by(name=cat).first()
+        if category:
+            category.count += 1
+            article.categories.append(category.id)
+        else:
+            category = Category(name=cat)
+            db.session.add(category)
+            article.categories.append(category.id)
     print(article)
     db.session.commit()
     return jsonify(article.to_dict()), 201
