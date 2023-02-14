@@ -192,6 +192,7 @@ def create_article():
         else:
             tag = Tag(name=t)
             db.session.add(tag)
+            db.session.commit()
             article.tags.append(tag.id)
     cat_str = request.json['categories']
     categories = list(map(str, cat_str.split(',')))
@@ -213,6 +214,8 @@ def create_article():
 @app.patch('/articles/<int:id>')
 @jwt_required()
 def update_article(id):
+    data = request.json
+    print(data)
     current_user = get_jwt_identity()
     article = Article.query.get_or_404(id)
     if article.tags is None:
