@@ -129,6 +129,8 @@ def all_authors():
 @app.patch('/authors/<int:id>')
 def update_author(id):
     author = Author.query.get_or_404(id)
+    data = request.json
+    print(data)
     # currently only updates the username. Add more as you see fit
     author.username = request.json['username']
     author.first_name = request.json['first_name']
@@ -205,6 +207,7 @@ def create_article():
         else:
             category = Category(name=cat)
             db.session.add(category)
+            db.session.commit()
             article.categories.append(category.id)
     print(article)
     db.session.add(article)
@@ -233,6 +236,7 @@ def update_article(id):
         else:
             tag = Tag(name=t)
             db.session.add(tag)
+            db.session.commit()
             article.tags.append(tag.id)
     cat_str = request.json['categories']
     categories = list(map(str, cat_str.split(',')))
@@ -244,6 +248,7 @@ def update_article(id):
         else:
             category = Category(name=cat)
             db.session.add(category)
+            db.session.commit()
             article.categories.append(category.id)
     article.content = request.json['content']
     article.title = request.json['title']
