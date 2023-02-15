@@ -113,7 +113,7 @@ def protected():
 def create_author():
     data = request.json
     author = Author(data['first_name'], data['last_name'],
-                    data['username'], data['email'], data['password'], data['admin'])
+                    data['username'], data['email'], data['password'], data['image'], data['admin'])
     print(data)
     db.session.add(author)
     db.session.commit()
@@ -134,6 +134,7 @@ def update_author(id):
     author.first_name = request.json['first_name']
     author.last_name = request.json['last_name']
     author.bio = request.json['bio']
+    author.image = request.json['image']
     author.admin = request.json['admin']
     db.session.commit()
     return jsonify(author.to_dict())
@@ -176,7 +177,7 @@ def all_edits():
 def create_article():
     current_user = get_jwt_identity()
     data = request.json
-    article = Article(data['content'], data['title'],
+    article = Article(data['content'], data['title'], data['status'], data['image'], data['slug'],
                       author_id=current_user)
     if article.tags is None:
         article.tags = []
@@ -246,6 +247,8 @@ def update_article(id):
             article.categories.append(category.id)
     article.content = request.json['content']
     article.title = request.json['title']
+    article.slug = request.json['slug']
+    article.image = request.json['image']
     edit = Edit(article_id=article.id, author_id=current_user)
     db.session.add(edit)
     db.session.commit()

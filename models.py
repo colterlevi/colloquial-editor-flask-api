@@ -16,6 +16,7 @@ class Author(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
     bio = db.Column(db.Text, nullable=True)
+    image = db.Column(db.String(120), nullable=True)
     articles = db.relationship('Article', backref='author', lazy=True)
     edits = db.relationship('Edit', backref='author', lazy=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
@@ -24,12 +25,13 @@ class Author(db.Model):
     # This is regular old Python classes
     # Right here is where we "whitelist" what can be set when creating a user
     # any column omitted cannot be set by the user/app manually
-    def __init__(self, first_name, last_name, username, email, password, admin):
+    def __init__(self, first_name, last_name, username, email, password, image, admin):
         self.first_name = first_name
         self.last_name = last_name
         self.username = username
         self.email = email
         self.password = password
+        self.image = image
         self.admin = admin
 
     def to_dict(self):
@@ -40,6 +42,7 @@ class Author(db.Model):
             'bio': self.bio,
             'username': self.username,
             'email': self.email,
+            'image': self.image,
             'admin': self.admin,
             'articles': [article.to_dict() for article in Article.query.filter_by(author_id=self.id)]
         }
@@ -55,6 +58,7 @@ class Article(db.Model):
     excerpt = db.Column(db.String(120))
     slug = db.Column(db.String(80))
     content = db.Column(db.Text)
+    image = db.Column(db.String(120), nullable=True)
     status = db.Column(db.String, nullable=True, server_default='draft')
     tags = db.Column(db.ARRAY(db.Integer), default=[], nullable=False)
     categories = db.Column(db.ARRAY(db.Integer), default=[], nullable=False)
@@ -63,13 +67,15 @@ class Article(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
-    def __init__(self, content, title, author_id):
+    def __init__(self, content, title, status, image, slug, author_id):
         self.content = content
         self.title = title
+        self.status = status
+        self.image = image
+        self.slug = slug
         self.author_id = author_id
 
-    def to_dict(self):
-        # author = Author.query.filter_by(id=self.author_id)
+    def to_dict(self): 
         return {
             'id': self.id,
             'title': self.title,
@@ -78,6 +84,7 @@ class Article(db.Model):
             'content': self.content,
             'excerpt': self.excerpt,
             'tags': self.tags,
+            # 'tagDict': [tag.to_dict() for tag in Tag.query.filter_by(id=self.tags)],
             'categories': self.categories,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
