@@ -230,9 +230,10 @@ def update_article(id):
     tags = list(map(str, tags_str.split(', ')))
     for t in tags:
         tag = Tag.query.filter_by(name=t).first()
-        if tag.id not in article.tags:
-            tag.count += 1
-            article.tags.append(tag.id)
+        if tag:
+            if tag.id not in article.tags:
+                tag.count += 1
+                article.tags.append(tag.id)
         else:
             tag = Tag(name=t)
             db.session.add(tag)
@@ -242,9 +243,10 @@ def update_article(id):
     categories = list(map(str, cat_str.split(',')))
     for cat in categories:
         category = Category.query.filter_by(name=cat).first()
-        if category.id not in article.categories:
-            category.count += 1
-            article.categories.append(category.id)
+        if category:
+            if category.id not in article.categories:
+                category.count += 1
+                article.categories.append(category.id)
         else:
             category = Category(name=cat)
             db.session.add(category)

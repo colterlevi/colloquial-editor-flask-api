@@ -41,6 +41,7 @@ class Author(db.Model):
             'last_name': self.last_name,
             'bio': self.bio,
             'username': self.username,
+            'password': self.password,
             'email': self.email,
             'image': self.image,
             'admin': self.admin,
